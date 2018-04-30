@@ -1,6 +1,5 @@
 # PermissionSimple
     一个Android权限封装例子，如需集成，复制permission文件夹下所有代码，记得在清单文件注册PermissionActivity还有相应的style。
-	
 ### 步骤一
 ```java
   PermissionsUtil.requestPermission(this,
