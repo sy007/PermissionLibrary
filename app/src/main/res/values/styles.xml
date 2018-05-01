@@ -17,5 +17,5 @@
         <item name="android:windowIsFloating">true</item>
     </style>
 
-    <color name="transparent">#0000000</color>
+
 </resources>
