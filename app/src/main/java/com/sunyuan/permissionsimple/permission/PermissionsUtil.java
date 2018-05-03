@@ -52,24 +52,29 @@ public class PermissionsUtil {
                                          String[] permission,
                                          boolean showTip,
                                          @Nullable TipInfo tip) {
-        /**  该部分只有当系统是6.0以下的才会执行 */
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            if (PermissionsUtil.hasPermission(activity, permission)) {
-                executeSuccess(activity, requestCode);
-            } else {
-                executeError(activity, requestCode);
+        String[] unGrantedPermissions = getUnGrantedPermissions(activity, permission);
+        if (unGrantedPermissions != null && unGrantedPermissions.length > 0) {
+            /**  该部分只有当系统是6.0以下的才会执行 */
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                if (PermissionsUtil.hasPermission(activity, permission)) {
+                    executeSuccess(activity, requestCode);
+                } else {
+                    executeError(activity, requestCode);
+                }
+                return;
             }
-            return;
+            String key = String.valueOf(System.currentTimeMillis());
+            activityMap.put(key, activity);
+            Intent intent = new Intent(activity, PermissionActivity.class);
+            intent.putExtra("permission", permission);
+            intent.putExtra("key", key);
+            intent.putExtra("showTip", showTip);
+            intent.putExtra("tip", tip);
+            intent.putExtra("requestCode", requestCode);
+            activity.startActivity(intent);
+        } else {
+            executeSuccess(activity, requestCode);
         }
-        String key = String.valueOf(System.currentTimeMillis());
-        activityMap.put(key, activity);
-        Intent intent = new Intent(activity, PermissionActivity.class);
-        intent.putExtra("permission", permission);
-        intent.putExtra("key", key);
-        intent.putExtra("showTip", showTip);
-        intent.putExtra("tip", tip);
-        intent.putExtra("requestCode", requestCode);
-        activity.startActivity(intent);
     }
 
     public static void executeError(Activity activity, int requestCode) {
