@@ -27,7 +27,7 @@ public class PermissionActivity extends AppCompatActivity {
     private int requestCode;
     private boolean isRequireCheck;
     private String[] permissions;
-    private boolean showTip;
+    private boolean showTip;jie
     private PermissionsUtil.TipInfo tipInfo;
     private final String defaultTitle = "帮助";
     private final String defaultContent = "当前应用缺少必要权限。\n \n 请点击 \"设置\"-\"权限\"-打开所需权限。";
