@@ -15,18 +15,20 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
  * Created  2018/4/30.
  *
  * @author six
+ * <p>
+ * 如何使用?参考下面写的一个例子
+ * @see <a href="https://github.com/sy007/PermissionSimple">https://github.com/sy007/PermissionSimple</a>
  */
 
 public class PermissionsUtil {
     public static final String TAG = PermissionsUtil.class.getSimpleName();
-    private static HashMap<String, Activity> activityMap = new HashMap();
+
 
     /**
      * 申请授权，当用户拒绝时，会显示默认一个默认的Dialog提示用户
@@ -47,8 +49,8 @@ public class PermissionsUtil {
      * @param showTip     当用户拒绝授权时，是否显示提示
      * @param tip         当用户拒绝时要显示Dialog设置
      */
-    public static void requestPermission(@NonNull Activity activity,
-                                         @NonNull int requestCode,
+    public static void requestPermission(@NonNull final Activity activity,
+                                         @NonNull final int requestCode,
                                          String[] permission,
                                          boolean showTip,
                                          @Nullable TipInfo tip) {
@@ -63,15 +65,18 @@ public class PermissionsUtil {
                 }
                 return;
             }
-            String key = String.valueOf(System.currentTimeMillis());
-            activityMap.put(key, activity);
-            Intent intent = new Intent(activity, PermissionActivity.class);
-            intent.putExtra("permission", permission);
-            intent.putExtra("key", key);
-            intent.putExtra("showTip", showTip);
-            intent.putExtra("tip", tip);
-            intent.putExtra("requestCode", requestCode);
-            activity.startActivity(intent);
+            PermissionActivity.requestPermission(activity, requestCode, tip, showTip, unGrantedPermissions,
+                    new RequestPermissionListener() {
+                        @Override
+                        public void onRequestSuccess() {
+                            executeSuccess(activity, requestCode);
+                        }
+
+                        @Override
+                        public void onRequestFail() {
+                            executeError(activity, requestCode);
+                        }
+                    });
         } else {
             executeSuccess(activity, requestCode);
         }
@@ -105,16 +110,16 @@ public class PermissionsUtil {
     /**
      * 判断权限是否授权:只要有一个没有授权就返回false
      *
-     * @param context
+     * @param activity
      * @param permissions
      * @return
      */
-    public static boolean hasPermission(@NonNull Context context, @NonNull String... permissions) {
+    public static boolean hasPermission(@NonNull Activity activity, @NonNull String... permissions) {
         if (permissions.length == 0) {
             return false;
         }
         for (String per : permissions) {
-            int result = PermissionChecker.checkSelfPermission(context, per);
+            int result = PermissionChecker.checkSelfPermission(activity, per);
             if (result != PermissionChecker.PERMISSION_GRANTED) {
                 return false;
             }
@@ -128,15 +133,16 @@ public class PermissionsUtil {
      * @param permissions 所有待检查是否授权的权限
      * @return
      */
-    public static String[] getUnGrantedPermissions(Activity context, String... permissions) {
-        String[] unGrantedPermissions;
-        List<String> permissionList = new ArrayList<>();
+    public static String[] getUnGrantedPermissions(Activity activity, String... permissions) {
+
         if (permissions.length == 0) {
             return null;
         }
+        String[] unGrantedPermissions;
+        List<String> permissionList = new ArrayList<>();
         //遍历权限数组，查找未被授权的权限
         for (String permission : permissions) {
-            int result = PermissionChecker.checkSelfPermission(context, permission);
+            int result = PermissionChecker.checkSelfPermission(activity, permission);
             if (result != PermissionChecker.PERMISSION_GRANTED) {
                 permissionList.add(permission);
             }
@@ -168,19 +174,12 @@ public class PermissionsUtil {
     }
 
     /**
-     * 跳转到当前应用对应的设置页面 * @param context
+     * 跳转到当前应用对应的设置页面
      */
     public static void toSetting(@NonNull Context context) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.setData(Uri.parse("package:" + context.getPackageName()));
         context.startActivity(intent);
-    }
-
-    /**
-     * * @param key * @return
-     */
-    static Activity fetchListener(String key) {
-        return activityMap.remove(key);
     }
 
 

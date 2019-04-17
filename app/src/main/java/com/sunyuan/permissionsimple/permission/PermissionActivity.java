@@ -1,8 +1,8 @@
 package com.sunyuan.permissionsimple.permission;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -13,45 +13,62 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
+
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created  2018/4/30.
  *
  * @author six
  */
-
 public class PermissionActivity extends AppCompatActivity {
     private int requestCode;
     private boolean isRequireCheck;
-    private String[] permission;
-    private String key;
+    private String[] permissions;
     private boolean showTip;
     private PermissionsUtil.TipInfo tipInfo;
     private final String defaultTitle = "帮助";
     private final String defaultContent = "当前应用缺少必要权限。\n \n 请点击 \"设置\"-\"权限\"-打开所需权限。";
     private final String defaultCancel = "取消";
     private final String defaultEnsure = "设置";
+    private static RequestPermissionListener requestListener;
+    private static final String KEY_PERMISSIONS = "KEY_PERMISSIONS";
+    private static final String KEY_REQUEST_CODE = "KEY_REQUEST_CODE";
+    private static final String KEY_TIP = "KEY_TIP";
+    private static final String KEY_SHOW_TIP = "KEY_SHOW_TIP";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getIntent() == null || !getIntent().hasExtra("permission")) {
+        if (getIntent() == null || !getIntent().hasExtra(KEY_PERMISSIONS)) {
             finish();
             return;
         }
         isRequireCheck = true;
         Intent intent = getIntent();
-        permission = intent.getStringArrayExtra("permission");
-        key = intent.getStringExtra("key");
-        requestCode = intent.getIntExtra("requestCode", 0);
-        showTip = intent.getBooleanExtra("showTip", true);
-        Serializable ser = intent.getSerializableExtra("tip");
+        permissions = intent.getStringArrayExtra(KEY_PERMISSIONS);
+        requestCode = intent.getIntExtra(KEY_REQUEST_CODE, 0);
+        showTip = intent.getBooleanExtra(KEY_SHOW_TIP, true);
+        Serializable ser = intent.getSerializableExtra(KEY_TIP);
         if (ser == null) {
             tipInfo = new PermissionsUtil.TipInfo(defaultTitle, defaultContent, defaultCancel, defaultEnsure);
         } else {
             tipInfo = (PermissionsUtil.TipInfo) ser;
         }
+    }
+
+    public static void requestPermission(Context context, int requestCode, PermissionsUtil.TipInfo tipInfo, boolean showTip,
+                                         String[] permissions, RequestPermissionListener requestListener) {
+        PermissionActivity.requestListener = requestListener;
+        Intent intent = new Intent(context, PermissionActivity.class);
+        intent.putExtra(KEY_REQUEST_CODE, requestCode);
+        intent.putExtra(KEY_PERMISSIONS, permissions);
+        intent.putExtra(KEY_TIP, tipInfo);
+        intent.putExtra(KEY_SHOW_TIP, showTip);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     @Override
@@ -60,12 +77,12 @@ public class PermissionActivity extends AppCompatActivity {
         super.onResume();
         if (isRequireCheck) {
             //判断授权是否都通过了
-            if (PermissionsUtil.hasPermission(this, permission)) {
+            if (PermissionsUtil.hasPermission(this, permissions)) {
                 //如果授权都通过了
                 permissionsGranted();
             } else {
                 //申请权限的时只申请未授权过的权限
-                requestPermissions(PermissionsUtil.getUnGrantedPermissions(PermissionActivity.this, permission));
+                requestPermissions(PermissionsUtil.getUnGrantedPermissions(PermissionActivity.this, permissions));
                 isRequireCheck = false;
             }
         } else {
@@ -95,21 +112,30 @@ public class PermissionActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         //部分厂商手机系统返回授权成功时，厂商可以拒绝权限，所以要用PermissionChecker二次判断
+
         if (requestCode == PermissionActivity.this.requestCode
                 && PermissionsUtil.isGranted(grantResults)
                 && PermissionsUtil.hasPermission(this, permissions)) {
             permissionsGranted();
         } else if (showTip) {
             String content = "当前应用缺少%s权限。\r\n请点击 \"设置\"-\"权限\"-打开所需权限。";
-            StringBuffer sb = new StringBuffer();
+            Set<String> tempPermissionNames = new HashSet<>();
             for (int i = 0; i < grantResults.length; i++) {
                 if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
                     String permissionName = getPermissionName(permissions[i]);
-                    if (i == grantResults.length - 1) {
-                        sb.append(permissionName);
-                    } else {
-                        sb.append(permissionName).append(",");
-                    }
+                    tempPermissionNames.add(permissionName);
+                }
+            }
+
+            int tempPermissionNameSize = tempPermissionNames.size();
+            StringBuilder sb = new StringBuilder();
+            for (String temPermissionName : tempPermissionNames) {
+                tempPermissionNameSize--;
+                if (0 == tempPermissionNameSize) {
+                    sb.append(temPermissionName);
+                } else {
+                    sb.append(temPermissionName)
+                            .append(",");
                 }
             }
             tipInfo.content = String.format(content, sb.toString());
@@ -185,8 +211,7 @@ public class PermissionActivity extends AppCompatActivity {
 
 
     private void permissionsDenied() {
-        Activity activity = PermissionsUtil.fetchListener(key);
-        PermissionsUtil.executeError(activity, requestCode);
+        requestListener.onRequestFail();
         finish();
     }
 
@@ -195,15 +220,13 @@ public class PermissionActivity extends AppCompatActivity {
      * 全部权限均已获取
      */
     private void permissionsGranted() {
-        Activity activity = PermissionsUtil.fetchListener(key);
-        PermissionsUtil.executeSuccess(activity, requestCode);
+        requestListener.onRequestSuccess();
         finish();
     }
 
-
     @Override
-    protected void onDestroy() {
-        PermissionsUtil.fetchListener(key);
-        super.onDestroy();
+    public void finish() {
+        requestListener = null;
+        super.finish();
     }
 }
