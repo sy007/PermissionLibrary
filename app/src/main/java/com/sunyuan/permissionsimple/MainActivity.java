@@ -40,16 +40,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         int id = v.getId();
         switch (id) {
+            //打开相机拍照
             case R.id.btn_camera_request:
                 PermissionsUtil.with(this)
-                        .needRequestPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
+                        .needRequestPermissions(
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
                                 Manifest.permission.CAMERA,
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         .addRequestPermissionListener(this)
                         .request(201);
-
-
                 break;
+            //拨打电话
             case R.id.btn_callphone_request:
                 PermissionsUtil.with(this)
                         .needRequestPermissions(Manifest.permission.CALL_PHONE)
