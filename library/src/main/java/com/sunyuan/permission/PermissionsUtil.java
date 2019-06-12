@@ -80,12 +80,11 @@ public class PermissionsUtil {
      * @param permissions 所有待检查是否授权的权限
      * @return
      */
-    static String[] getUnGrantedPermissions(Context context, String... permissions) {
-
+    @NonNull
+    static List<String> getUnGrantedPermissions(Context context, String... permissions) {
         if (permissions.length == 0) {
-            return null;
+            return new ArrayList<>();
         }
-        String[] unGrantedPermissions;
         List<String> permissionList = new ArrayList<>();
         //遍历权限数组，查找未被授权的权限
         for (String permission : permissions) {
@@ -94,12 +93,7 @@ public class PermissionsUtil {
                 permissionList.add(permission);
             }
         }
-        //遍历List,给未赋值的权限列表赋值
-        unGrantedPermissions = new String[permissionList.size()];
-        for (int i = 0; i < permissionList.size(); i++) {
-            unGrantedPermissions[i] = permissionList.get(i);
-        }
-        return unGrantedPermissions;
+        return permissionList;
     }
 
     /**

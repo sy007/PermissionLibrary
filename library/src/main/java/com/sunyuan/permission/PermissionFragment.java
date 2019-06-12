@@ -3,12 +3,12 @@ package com.sunyuan.permission;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -61,10 +61,10 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
     /**
      * 请求权限兼容低版本
      *
-     * @param permission
+     * @param permissions
      */
-    private void requestPermissions(String[] permission) {
-        requestPermissions(permission, requestCode);
+    private void requestPermissions(List<String> permissions) {
+        requestPermissions(permissions.toArray(new String[]{}), requestCode);
     }
 
 
@@ -97,23 +97,15 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
         Objects.requireNonNull(permissions, "permissions connot be empty");
         this.isProceed = false;
         this.requestCode = requestCode;
-        /**  该部分只有当系统是6.0以下的才会执行 */
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            if (PermissionsUtil.hasPermission(mActivity, permissions)) {
-                if (requestPermissionListener != null) {
-                    requestPermissionListener.onRequestSuccess(requestCode);
-                }
+        List<String> unGrantedPermissions = PermissionsUtil.getUnGrantedPermissions(mActivity, permissions);
+        if (!unGrantedPermissions.isEmpty()) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                Set<String> rejectPermissions = new HashSet<>(unGrantedPermissions);
+                handleRejectPermission(rejectPermissions);
             } else {
-                if (requestPermissionListener != null) {
-                    requestPermissionListener.onRequestFail(requestCode);
-                }
+                //申请权限的时只申请未授权过的权限
+                requestPermissions(unGrantedPermissions);
             }
-            return;
-        }
-        String[] unGrantedPermissions = PermissionsUtil.getUnGrantedPermissions(mActivity, permissions);
-        if (unGrantedPermissions != null && unGrantedPermissions.length > 0) {
-            //申请权限的时只申请未授权过的权限
-            requestPermissions(PermissionsUtil.getUnGrantedPermissions(mActivity, permissions));
         } else {
             if (requestPermissionListener != null) {
                 requestPermissionListener.onRequestSuccess(requestCode);
@@ -146,18 +138,19 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
             permissionsGranted();
             return;
         }
-        Set<String> tempPermissions = new HashSet<>();
-        for (int i = 0; i < grantResults.length; i++) {
-            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                tempPermissions.add(permissions[i]);
-            }
-        }
+        List<String> unGrantedPermissions = PermissionsUtil.getUnGrantedPermissions(mActivity, permissions);
+        Set<String> rejectPermissions = new HashSet<>(unGrantedPermissions);
+        handleRejectPermission(rejectPermissions);
+    }
+
+
+    private void handleRejectPermission(Set<String> rejectPermissions) {
         if (showTip) {
             boolean isUseGlobalDialog = PermissionsUtil.permissionConfig != null &&
                     PermissionsUtil.permissionConfig.getDialogCallBack() != null;
             if (isUseGlobalDialog) {
                 Dialog dialog = PermissionsUtil.permissionConfig.getDialogCallBack().
-                        createDialog(mActivity, tipInfo, tempPermissions, this);
+                        createDialog(mActivity, tipInfo, rejectPermissions, this);
                 dialog.show();
                 return;
             }
