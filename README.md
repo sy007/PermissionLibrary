@@ -1,4 +1,4 @@
-# PermissionSimple
+# PermissionLibrary
 一个Android权限封装库。
 - [x] 支持Activity和Fragment中使用
 - [x] 支持单个或多个权限请求配置
