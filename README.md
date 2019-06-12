@@ -5,15 +5,15 @@
 - [x] 支持全局弹窗提示配置
 # 使用
 ```
-    allprojects {
-		repositories {
-			...
-			maven { url 'https://jitpack.io' }
-		}
+allprojects {
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
 	}
+}
     
     
-     implementation 'com.github.sy007:PermissionLibrary:1.0-beta'
+implementation 'com.github.sy007:PermissionLibrary:1.0-beta'
 ```
 在**Application**中全局配置
 ```java
