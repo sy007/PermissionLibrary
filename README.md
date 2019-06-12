@@ -2,22 +2,82 @@
 一个Android权限封装库。
 - [x] 支持Activity和Fragment中使用
 - [x] 支持单个或多个权限请求配置
-- [x] 支持全局配置
+- [x] 支持全局弹窗提示配置
 # 使用
 在**Application**中全局配置
 ```java
- public class App extends Application {
+public class App extends Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
-        TipInfo tipInfo = new TipInfo.Builder().setCancel("取消")
-                .setEnsure("设置")
-                .setTitle("温馨提示")
-                .setContent("请到权限管理打开权限")
+        PermissionConfig permissionConfig = new PermissionConfig.Builder().
+                showTip(true)
+                .setDialogCallBack(createDialog())
                 .build();
-        PermissionsUtil.init(new PermissionConfig.Builder().setTipInfo(tipInfo).showTip(true)
-                .build());
+        PermissionsUtil.init(permissionConfig);
+    }
+
+    /**
+     * 创建权限被拒后的全局统一风格弹窗
+     *
+     * @return
+     */
+    private DialogCallBack createDialog() {
+        return new DialogCallBack() {
+            @Override
+            public Dialog createDialog(final Context context, TipInfo tipInfo, Set<String> permissions, final PremissionHandle handle) {
+                //当外部没设置弹窗信息时为null,这时我们要自己处理
+                if (tipInfo == null) {
+                    String content = "当前应用缺少%s权限。\r\n请点击 \"设置\"-\"权限管理\"-打开所需权限。";
+                    int tempPermissionNameSize = permissions.size();
+                    StringBuilder sb = new StringBuilder();
+                    for (String temPermissionName : permissions) {
+                        tempPermissionNameSize--;
+                        if (0 == tempPermissionNameSize) {
+                            sb.append(temPermissionName);
+                        } else {
+                            sb.append(temPermissionName)
+                                    .append(",");
+                        }
+                    }
+                    tipInfo = new TipInfo.Builder().setTitle("温馨提示")
+                            .setCancel("取消")
+                            .setContent(String.format(content, sb.toString()))
+                            .setEnsure("设置").build();
+                }
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle(TextUtils.isEmpty(tipInfo.getTitle()) ? "" : tipInfo.getTitle());
+                builder.setMessage(TextUtils.isEmpty(tipInfo.getContent()) ? "" : tipInfo.getContent());
+                builder.setNegativeButton(TextUtils.isEmpty(tipInfo.getCancel()) ? "" : tipInfo.getCancel(),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                //告诉框架取消处理
+                                handle.cancel();
+                            }
+                        });
+                builder.setPositiveButton(TextUtils.isEmpty(tipInfo.getEnsure()) ? "" : tipInfo.getEnsure(),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                //告诉框架处理
+                                handle.proceed();
+                                toSetting(context);
+                            }
+                        });
+                builder.setCancelable(false);
+                return builder.create();
+            }
+        };
+    }
+
+    static void toSetting(@NonNull Context context) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setData(Uri.parse("package:" + context.getPackageName()));
+        context.startActivity(intent);
     }
 }
 ```
@@ -81,7 +141,7 @@
 ```
 # 更多api调用
 ```java
-    public interface PermissionFeature {
+public interface PermissionFeature {
 
     /**
      * 需要请求的权限
@@ -100,7 +160,7 @@
     PermissionFeature addRequestPermissionListener(RequestPermissionListener requestPermissionListener);
 
     /**
-     * 权限拒绝后是否显示弹窗提示
+     * 权限拒绝后是否显示弹窗提示 会覆盖{@link PermissionConfig}中配置的showTip
      *
      * @param showTip 是否显示弹窗提示 默认显示
      * @return
@@ -109,6 +169,7 @@
 
     /**
      * 设置弹窗信息{@link TipInfo}
+     * 设置的{@code tipInfo}数据将被注入到{@link DialogCallBack#createDialog(Context, TipInfo, Set, PremissionHandle)
      *
      * @param tipInfo
      * @return

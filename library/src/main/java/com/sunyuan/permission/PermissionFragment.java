@@ -1,15 +1,12 @@
 package com.sunyuan.permission;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,17 +15,15 @@ import java.util.Set;
  * author:Six
  * Date:2019/6/11
  */
-public class PermissionFragment extends Fragment implements PermissionFeature {
+public class PermissionFragment extends Fragment implements PermissionFeature, PremissionHandle {
     private Activity mActivity;
     private int requestCode;
     private String[] permissions;
     private boolean showTip = PermissionsUtil.permissionConfig == null ||
             PermissionsUtil.permissionConfig.isShowTip();
     private TipInfo tipInfo;
-    private static final String DEFAUL_TTITLE = "帮助";
-    private static final String DEFAULT_CANCEL = "取消";
-    private static final String DEFAULT_ENSURE = "设置";
     private RequestPermissionListener requestPermissionListener;
+    private boolean isProceed;
 
     @Override
     public void onAttach(Context context) {
@@ -41,6 +36,24 @@ public class PermissionFragment extends Fragment implements PermissionFeature {
     public void onDetach() {
         super.onDetach();
         mActivity = null;
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (isProceed) {
+            //判断授权是否都通过了
+            if (PermissionsUtil.hasPermission(mActivity, permissions)) {
+                isProceed = false;
+                //如果授权都通过了
+                permissionsGranted();
+            } else {
+                isProceed = false;
+                //申请权限的时只申请未授权过的权限
+                requestPermissions(PermissionsUtil.getUnGrantedPermissions(mActivity, permissions));
+            }
+        }
     }
 
 
@@ -80,6 +93,7 @@ public class PermissionFragment extends Fragment implements PermissionFeature {
 
     @Override
     public void request(int requestCode) {
+        this.isProceed = false;
         this.requestCode = requestCode;
         /**  该部分只有当系统是6.0以下的才会执行 */
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -103,32 +117,6 @@ public class PermissionFragment extends Fragment implements PermissionFeature {
                 requestPermissionListener.onRequestSuccess(requestCode);
             }
         }
-    }
-
-
-    /**
-     * 显示缺失权限提示
-     */
-    private void showMissingPermissionDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setTitle(TextUtils.isEmpty(tipInfo.title) ? "" : tipInfo.title);
-        builder.setMessage(TextUtils.isEmpty(tipInfo.content) ? "" : tipInfo.content);
-        builder.setNegativeButton(TextUtils.isEmpty(tipInfo.cancel) ? "" : tipInfo.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        builder.setPositiveButton(TextUtils.isEmpty(tipInfo.ensure) ?
-                "" : tipInfo.ensure, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                PermissionsUtil.toSetting(mActivity);
-            }
-        });
-        builder.setCancelable(false);
-        builder.show();
     }
 
 
@@ -156,42 +144,37 @@ public class PermissionFragment extends Fragment implements PermissionFeature {
             permissionsGranted();
             return;
         }
-        if (showTip) {
-            if (tipInfo == null) {
-                if (PermissionsUtil.permissionConfig != null &&
-                        PermissionsUtil.permissionConfig.getTipInfo() != null) {
-                    tipInfo = PermissionsUtil.permissionConfig.getTipInfo();
-                } else {
-                    String content = "当前应用缺少%s权限。\r\n请点击 \"设置\"-\"权限管理\"-打开所需权限。";
-                    Set<String> tempPermissionNames = new HashSet<>();
-                    for (int i = 0; i < grantResults.length; i++) {
-                        if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                            String permissionName = PermissionsUtil.getPermissionName(permissions[i]);
-                            tempPermissionNames.add(permissionName);
-                        }
-                    }
-
-                    int tempPermissionNameSize = tempPermissionNames.size();
-                    StringBuilder sb = new StringBuilder();
-                    for (String temPermissionName : tempPermissionNames) {
-                        tempPermissionNameSize--;
-                        if (0 == tempPermissionNameSize) {
-                            sb.append(temPermissionName);
-                        } else {
-                            sb.append(temPermissionName)
-                                    .append(",");
-                        }
-                    }
-                    tipInfo = new TipInfo.Builder().setTitle(DEFAUL_TTITLE)
-                            .setCancel(DEFAULT_CANCEL)
-                            .setContent(String.format(content, sb.toString()))
-                            .setEnsure(DEFAULT_ENSURE).build();
-                }
+        Set<String> tempPermissionNames = new HashSet<>();
+        for (int i = 0; i < grantResults.length; i++) {
+            if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                String permissionName = PermissionsUtil.getPermissionName(permissions[i]);
+                tempPermissionNames.add(permissionName);
             }
-            showMissingPermissionDialog();
+        }
+        if (showTip) {
+            boolean isUseGlobalDialog = PermissionsUtil.permissionConfig != null &&
+                    PermissionsUtil.permissionConfig.getDialogCallBack() != null;
+            if (isUseGlobalDialog) {
+                Dialog dialog = PermissionsUtil.permissionConfig.getDialogCallBack().
+                        createDialog(mActivity, tipInfo, tempPermissionNames, this);
+                dialog.show();
+                return;
+            }
+            permissionsDenied();
         } else {
             //不需要提示用户
             permissionsDenied();
         }
+    }
+
+
+    @Override
+    public void proceed() {
+        isProceed = true;
+    }
+
+    @Override
+    public void cancel() {
+        isProceed = false;
     }
 }

@@ -5,39 +5,39 @@ package com.sunyuan.permission;
  * Date:2019/6/12
  */
 public class PermissionConfig {
-    private TipInfo tipInfo;
-
     private boolean showTip;
+    private DialogCallBack dialogCallBack;
 
-    public TipInfo getTipInfo() {
-        return tipInfo;
-    }
 
     public boolean isShowTip() {
         return showTip;
     }
 
+    public DialogCallBack getDialogCallBack() {
+        return dialogCallBack;
+    }
+
 
     private PermissionConfig(Builder builder) {
         this.showTip = builder.showTip;
-        this.tipInfo = builder.tipInfo;
+        this.dialogCallBack = builder.dialogCallBack;
     }
 
     public static class Builder {
-        /**
-         * 权限被拒绝后弹窗提醒文案配置
-         * {@link TipInfo}
-         */
-        private TipInfo tipInfo;
+
         /**
          * 是否开启权限被拒绝后弹窗提醒
          * 默认为true
          */
         private boolean showTip = true;
 
+        /**
+         * 设置统一弹窗
+         */
+        private DialogCallBack dialogCallBack;
 
-        public Builder setTipInfo(TipInfo tipInfo) {
-            this.tipInfo = tipInfo;
+        public Builder setDialogCallBack(DialogCallBack dialogCallBack) {
+            this.dialogCallBack = dialogCallBack;
             return this;
         }
 

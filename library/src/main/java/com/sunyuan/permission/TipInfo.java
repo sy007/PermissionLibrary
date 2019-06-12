@@ -26,6 +26,27 @@ public class TipInfo implements Serializable {
     String ensure;
 
 
+    public String getTitle() {
+        return title;
+    }
+
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getCancel() {
+        return cancel;
+    }
+
+
+
+    public String getEnsure() {
+        return ensure;
+    }
+
+
+
     public TipInfo(Builder builder) {
         this.title = builder.title;
         this.content = builder.content;
