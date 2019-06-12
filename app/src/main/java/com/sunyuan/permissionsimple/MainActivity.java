@@ -14,13 +14,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.sunyuan.permissionsimple.permission.PermissionFail;
-import com.sunyuan.permissionsimple.permission.PermissionSuccess;
-import com.sunyuan.permissionsimple.permission.PermissionsUtil;
+
+import com.sunyuan.permission.PermissionsUtil;
+import com.sunyuan.permission.RequestPermissionListener;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, RequestPermissionListener {
 
     public static final int CAMERA_REQUEST_CODE = 0;
     private ImageView ivCameraResult;
@@ -41,44 +41,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = v.getId();
         switch (id) {
             case R.id.btn_camera_request:
-                PermissionsUtil.requestPermission(this,
-                        201,
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                PermissionsUtil.with(this)
+                        .needRequestPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.CAMERA,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .addRequestPermissionListener(this)
+                        .request(201);
+
+
                 break;
             case R.id.btn_callphone_request:
-                PermissionsUtil.requestPermission(this,
-                        200,
-                        Manifest.permission.CALL_PHONE);
+                PermissionsUtil.with(this)
+                        .needRequestPermissions(Manifest.permission.CALL_PHONE)
+                        .addRequestPermissionListener(this)
+                        .request(200);
                 break;
             default:
                 break;
         }
     }
 
-    @PermissionSuccess(requestCode = 201)
     public void launchCameraSucc() {
         Toast.makeText(this, "相机权限请求成功", Toast.LENGTH_SHORT).show();
         launchCamera();
     }
 
-    @PermissionFail(requestCode = 201)
     public void launchCameraError() {
         Toast.makeText(this, "相机权限请求失败", Toast.LENGTH_SHORT).show();
     }
 
-    @PermissionSuccess(requestCode = 200)
     public void callPhoneSucc() {
         Toast.makeText(this, "拨打电话权限请求成功", Toast.LENGTH_SHORT).show();
-        diallPhone("123456");
+        dialPhone("123456");
     }
 
-    @PermissionFail(requestCode = 200)
     public void callPhoneError() {
         Toast.makeText(this, "拨打电话权限请求失败", Toast.LENGTH_SHORT).show();
     }
 
-    public void diallPhone(String phoneNum) {
+    public void dialPhone(String phoneNum) {
         Intent intent = new Intent(Intent.ACTION_DIAL);
         Uri data = Uri.parse("tel:" + phoneNum);
         intent.setData(data);
@@ -111,6 +112,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 default:
                     break;
             }
+        }
+    }
+
+    @Override
+    public void onRequestSuccess(int requestCode) {
+        switch (requestCode) {
+            case 200:
+                callPhoneSucc();
+                break;
+            case 201:
+                launchCameraSucc();
+                break;
+        }
+    }
+
+    @Override
+    public void onRequestFail(int requestCode) {
+        switch (requestCode) {
+            case 200:
+                callPhoneError();
+                break;
+            case 201:
+                launchCameraError();
+                break;
         }
     }
 }
