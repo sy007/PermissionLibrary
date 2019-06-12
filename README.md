@@ -30,14 +30,14 @@ public class App extends Application {
                 //当外部没设置弹窗信息时为null,这时我们要自己处理
                 if (tipInfo == null) {
                     String content = "当前应用缺少%s权限。\r\n请点击 \"设置\"-\"权限管理\"-打开所需权限。";
-                    int tempPermissionNameSize = permissions.size();
                     StringBuilder sb = new StringBuilder();
-                    for (String temPermissionName : permissions) {
-                        tempPermissionNameSize--;
-                        if (0 == tempPermissionNameSize) {
-                            sb.append(temPermissionName);
+                    int permissionNameSize = permissions.size();
+                    for (String p : permissions) {
+                        permissionNameSize--;
+                        if (0 == permissionNameSize) {
+                            sb.append(getPermissionName(p));
                         } else {
-                            sb.append(temPermissionName)
+                            sb.append(getPermissionName(p))
                                     .append(",");
                         }
                     }

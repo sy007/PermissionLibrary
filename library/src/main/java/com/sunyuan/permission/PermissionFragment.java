@@ -144,11 +144,10 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
             permissionsGranted();
             return;
         }
-        Set<String> tempPermissionNames = new HashSet<>();
+        Set<String> tempPermissions = new HashSet<>();
         for (int i = 0; i < grantResults.length; i++) {
             if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                String permissionName = PermissionsUtil.getPermissionName(permissions[i]);
-                tempPermissionNames.add(permissionName);
+                tempPermissions.add(permissions[i]);
             }
         }
         if (showTip) {
@@ -156,7 +155,7 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
                     PermissionsUtil.permissionConfig.getDialogCallBack() != null;
             if (isUseGlobalDialog) {
                 Dialog dialog = PermissionsUtil.permissionConfig.getDialogCallBack().
-                        createDialog(mActivity, tipInfo, tempPermissionNames, this);
+                        createDialog(mActivity, tipInfo, tempPermissions, this);
                 dialog.show();
                 return;
             }

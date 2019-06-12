@@ -1,5 +1,6 @@
 package com.sunyuan.permissionsimple;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
@@ -47,14 +48,14 @@ public class App extends Application {
                 //当外部没设置弹窗信息时为null,这时我们要自己处理
                 if (tipInfo == null) {
                     String content = "当前应用缺少%s权限。\r\n请点击 \"设置\"-\"权限管理\"-打开所需权限。";
-                    int tempPermissionNameSize = permissions.size();
                     StringBuilder sb = new StringBuilder();
-                    for (String temPermissionName : permissions) {
-                        tempPermissionNameSize--;
-                        if (0 == tempPermissionNameSize) {
-                            sb.append(temPermissionName);
+                    int permissionNameSize = permissions.size();
+                    for (String p : permissions) {
+                        permissionNameSize--;
+                        if (0 == permissionNameSize) {
+                            sb.append(getPermissionName(p));
                         } else {
-                            sb.append(temPermissionName)
+                            sb.append(getPermissionName(p))
                                     .append(",");
                         }
                     }
@@ -89,6 +90,44 @@ public class App extends Application {
                 return builder.create();
             }
         };
+    }
+
+
+    /**
+     * 根据危险权限的字符串值获取它的中文名称
+     *
+     * @param permission 危险权限的字符串值
+     * @return 权限中文名称
+     */
+    static String getPermissionName(String permission) {
+        String permissionName = "";
+        switch (permission) {
+            case Manifest.permission.CAMERA:
+                permissionName = "相机";
+                break;
+            case Manifest.permission.WRITE_EXTERNAL_STORAGE:
+            case Manifest.permission.READ_EXTERNAL_STORAGE:
+                permissionName = "存储";
+                break;
+            case Manifest.permission.RECORD_AUDIO:
+                permissionName = "录音";
+                break;
+            case Manifest.permission.CALL_PHONE:
+                permissionName = "拨打电话";
+                break;
+            case Manifest.permission.ACCESS_FINE_LOCATION:
+            case Manifest.permission.ACCESS_COARSE_LOCATION:
+                permissionName = "定位";
+                break;
+            case Manifest.permission.READ_CONTACTS:
+            case Manifest.permission.WRITE_CONTACTS:
+            case Manifest.permission.GET_ACCOUNTS:
+                permissionName = "联系人";
+                break;
+            default:
+                break;
+        }
+        return permissionName;
     }
 
     static void toSetting(@NonNull Context context) {
