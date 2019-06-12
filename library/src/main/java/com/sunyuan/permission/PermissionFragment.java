@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -93,6 +94,7 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
 
     @Override
     public void request(int requestCode) {
+        Objects.requireNonNull(permissions, "permissions connot be empty");
         this.isProceed = false;
         this.requestCode = requestCode;
         /**  该部分只有当系统是6.0以下的才会执行 */
@@ -174,6 +176,6 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
 
     @Override
     public void cancel() {
-        isProceed = false;
+        permissionsDenied();
     }
 }
