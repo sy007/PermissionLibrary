@@ -1,6 +1,6 @@
 # PermissionLibrary
 一个Android权限封装库。
-- [x] 支持Activity和Fragment中使用
+- [x] 支持FragmentActivity,Activity,Fragment中使用
 - [x] 支持单个或多个权限请求配置
 - [x] 支持全局弹窗提示配置
 # 使用
