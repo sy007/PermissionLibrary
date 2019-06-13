@@ -1,13 +1,11 @@
 package com.sunyuan.permission;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.NonNull;
-
+import android.support.v4.app.Fragment;
 
 import java.util.HashSet;
 import java.util.List;
@@ -18,7 +16,7 @@ import java.util.Set;
  * author:Six
  * Date:2019/6/11
  */
-public class PermissionFragment extends Fragment implements PermissionFeature, PremissionHandle {
+public class PermissionSupportFragment extends Fragment implements PermissionFeature, PremissionHandle {
     private Activity mActivity;
     private int requestCode;
     private String[] permissions;
@@ -65,7 +63,6 @@ public class PermissionFragment extends Fragment implements PermissionFeature, P
      *
      * @param permissions
      */
-    @TargetApi(Build.VERSION_CODES.M)
     private void requestPermissions(List<String> permissions) {
         requestPermissions(permissions.toArray(new String[]{}), requestCode);
     }
