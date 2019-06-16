@@ -1,19 +1,15 @@
 package com.sunyuan.permission;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.content.PermissionChecker;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created  2018/4/30.
@@ -23,7 +19,7 @@ import java.util.List;
 
 public class PermissionsUtil {
 
-    private static final String FRAGMENT_TAG = "FRAGMENT_TAG";
+
 
     static PermissionConfig permissionConfig;
 
@@ -33,50 +29,13 @@ public class PermissionsUtil {
     }
 
 
-    public static PermissionFeature with(Fragment fragment) {
-        return getSupportFragment(fragment.getChildFragmentManager());
-    }
-
-    public static PermissionFeature with(FragmentActivity fragmentActivity) {
-        return getSupportFragment(fragmentActivity.getSupportFragmentManager());
-    }
-
     @Nullable
     public static PermissionFeature with(Context context) {
-        if (!(context instanceof Application)) {
-            if (context instanceof FragmentActivity) {
-                return getSupportFragment(((FragmentActivity) context).getSupportFragmentManager());
-            } else if (context instanceof Activity) {
-                return getSupportFragment(((Activity) context).getFragmentManager());
-            } else if (context instanceof ContextWrapper) {
-                return with(((ContextWrapper) context).getBaseContext());
-            }
-        }
-        //暂未实现application中申请权限
-        return null;
+        Objects.requireNonNull(context, "context connot be empty");
+        return new PermissionFeatureImpl(context);
+//        throw new IllegalArgumentException("not supported yet application request permissions");
     }
 
-
-    private static PermissionFeature getSupportFragment(android.app.FragmentManager fragmentManager) {
-        PermissionFragment current = (PermissionFragment) fragmentManager.findFragmentByTag(FRAGMENT_TAG);
-        if (current == null) {
-            current = new PermissionFragment();
-            fragmentManager.beginTransaction().add(current, FRAGMENT_TAG).commitAllowingStateLoss();
-            fragmentManager.executePendingTransactions();
-        }
-        return current;
-    }
-
-    private static PermissionFeature getSupportFragment(FragmentManager supportFragmentManager) {
-        PermissionSupportFragment current = (PermissionSupportFragment) supportFragmentManager.findFragmentByTag(
-                FRAGMENT_TAG);
-        if (current == null) {
-            current = new PermissionSupportFragment();
-            supportFragmentManager.beginTransaction().add(current, FRAGMENT_TAG).commitAllowingStateLoss();
-            supportFragmentManager.executePendingTransactions();
-        }
-        return current;
-    }
 
 
     /**

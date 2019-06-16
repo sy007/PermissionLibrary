@@ -1,6 +1,7 @@
 package com.sunyuan.permission;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
 import java.util.Set;
 
@@ -16,7 +17,7 @@ public interface PermissionFeature {
      * @param permissions
      * @return
      */
-    PermissionFeature needRequestPermissions(String... permissions);
+    PermissionFeature needRequestPermissions(@NonNull String... permissions);
 
     /**
      * 设置权限同意或拒绝后的回调
@@ -27,16 +28,17 @@ public interface PermissionFeature {
     PermissionFeature addRequestPermissionListener(RequestPermissionListener requestPermissionListener);
 
     /**
-     * 权限拒绝后是否显示弹窗提示 会覆盖{@link PermissionConfig}中配置的showTip
+     * 权限拒绝后是否显示弹窗提示 会覆盖{@link PermissionConfig}中配置的{@code showTip}
      *
-     * @param showTip 是否显示弹窗提示 默认显示
+     * @param isShowTip 是否显示弹窗提示 默认显示
      * @return
      */
-    PermissionFeature showTip(boolean showTip);
+    PermissionFeature showTip(boolean isShowTip);
 
     /**
      * 设置弹窗信息{@link TipInfo}
-     * 设置的{@code tipInfo}数据将被注入到{@link DialogCallBack#createDialog(Context, TipInfo, Set, PremissionHandle)
+     * 设置的{@code tipInfo}数据将被注入到
+     * {@link DialogCallBack#createDialog(Context, TipInfo, Set, PremissionHandle)
      *
      * @param tipInfo
      * @return

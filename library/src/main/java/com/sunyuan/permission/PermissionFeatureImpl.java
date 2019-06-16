@@ -5,19 +5,19 @@ import android.content.Context;
 import java.util.Objects;
 
 /**
- * author:Six
- * Date:2019/6/13
- * <p>
- * 暂未实现
+ * author：six
+ * created by:2019-06-16
+ * github:https://github.com/sy007
  */
-public class PermissionApplication implements PermissionFeature {
+public class PermissionFeatureImpl implements PermissionFeature {
     private Context context;
     private String[] permissions;
     private RequestPermissionListener requestPermissionListener;
-    private boolean showTip;
     private TipInfo tipInfo;
+    private boolean isShowTip = PermissionsUtil.permissionConfig == null ||
+            PermissionsUtil.permissionConfig.isShowTip();
 
-    public PermissionApplication(Context context) {
+    public PermissionFeatureImpl(Context context) {
         this.context = context;
     }
 
@@ -30,12 +30,12 @@ public class PermissionApplication implements PermissionFeature {
     @Override
     public PermissionFeature addRequestPermissionListener(RequestPermissionListener requestPermissionListener) {
         this.requestPermissionListener = requestPermissionListener;
-        return null;
+        return this;
     }
 
     @Override
-    public PermissionFeature showTip(boolean showTip) {
-        this.showTip = showTip;
+    public PermissionFeature showTip(boolean isShowTip) {
+        this.isShowTip = isShowTip;
         return this;
     }
 
@@ -48,5 +48,7 @@ public class PermissionApplication implements PermissionFeature {
     @Override
     public void request(int requestCode) {
         Objects.requireNonNull(permissions, "permissions connot be empty");
+        PermissionActivity.startActivity(context, requestCode, permissions, isShowTip,
+                tipInfo, requestPermissionListener);
     }
 }

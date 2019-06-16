@@ -5,12 +5,12 @@ package com.sunyuan.permission;
  * Date:2019/6/12
  */
 public class PermissionConfig {
-    private boolean showTip;
+    private boolean isShowTip;
     private DialogCallBack dialogCallBack;
 
 
     public boolean isShowTip() {
-        return showTip;
+        return isShowTip;
     }
 
     public DialogCallBack getDialogCallBack() {
@@ -19,7 +19,7 @@ public class PermissionConfig {
 
 
     private PermissionConfig(Builder builder) {
-        this.showTip = builder.showTip;
+        this.isShowTip = builder.isShowTip;
         this.dialogCallBack = builder.dialogCallBack;
     }
 
@@ -29,7 +29,7 @@ public class PermissionConfig {
          * 是否开启权限被拒绝后弹窗提醒
          * 默认为true
          */
-        private boolean showTip = true;
+        private boolean isShowTip = true;
 
         /**
          * 设置统一弹窗
@@ -42,8 +42,8 @@ public class PermissionConfig {
         }
 
 
-        public Builder showTip(boolean showTip) {
-            this.showTip = showTip;
+        public Builder showTip(boolean isShowTip) {
+            this.isShowTip = isShowTip;
             return this;
         }
 

@@ -11,13 +11,17 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.sunyuan.permission.DialogCallBack;
 import com.sunyuan.permission.PermissionConfig;
 import com.sunyuan.permission.PermissionsUtil;
 import com.sunyuan.permission.PremissionHandle;
+import com.sunyuan.permission.RequestPermissionListener;
 import com.sunyuan.permission.TipInfo;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -34,6 +38,24 @@ public class App extends Application {
                 .setDialogCallBack(createDialog())
                 .build();
         PermissionsUtil.init(permissionConfig);
+        //application 中请求权限
+//        PermissionsUtil.with(this)
+//                .needRequestPermissions(
+//                        Manifest.permission.READ_EXTERNAL_STORAGE,
+//                        Manifest.permission.CAMERA,
+//                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                .addRequestPermissionListener(new RequestPermissionListener() {
+//                    @Override
+//                    public void onRequestSuccess(int requestCode) {
+//                        Toast.makeText(getApplicationContext(),"权限请求成功",Toast.LENGTH_LONG).show();
+//                    }
+//
+//                    @Override
+//                    public void onRequestFail(int requestCode) {
+//                        Toast.makeText(getApplicationContext(),"权限请求失败",Toast.LENGTH_LONG).show();
+//                    }
+//                })
+//                .request(300);
     }
 
     /**
@@ -48,15 +70,17 @@ public class App extends Application {
                 //当外部没设置弹窗信息时为null,这时我们要自己处理
                 if (tipInfo == null) {
                     String content = "当前应用缺少%s权限。\r\n请点击 \"设置\"-\"权限管理\"-打开所需权限。";
-                    StringBuilder sb = new StringBuilder();
+                    Set<String> hintSet = new HashSet<>();
                     int permissionNameSize = permissions.size();
                     for (String p : permissions) {
+                        hintSet.add(Utils.getPermissionName(p));
+                    }
+                    StringBuilder sb = new StringBuilder();
+                    for (String hint : hintSet) {
+                        sb.append(hint);
                         permissionNameSize--;
-                        if (0 == permissionNameSize) {
-                            sb.append(getPermissionName(p));
-                        } else {
-                            sb.append(getPermissionName(p))
-                                    .append(",");
+                        if (0 != permissionNameSize) {
+                            sb.append(",");
                         }
                     }
                     tipInfo = new TipInfo.Builder().setTitle("温馨提示")
@@ -83,7 +107,7 @@ public class App extends Application {
                                 dialog.dismiss();
                                 //告诉框架处理
                                 handle.proceed();
-                                toSetting(context);
+                                Utils.toSetting(context);
                             }
                         });
                 builder.setCancelable(false);
@@ -93,46 +117,5 @@ public class App extends Application {
     }
 
 
-    /**
-     * 根据危险权限的字符串值获取它的中文名称
-     *
-     * @param permission 危险权限的字符串值
-     * @return 权限中文名称
-     */
-    static String getPermissionName(String permission) {
-        String permissionName = "";
-        switch (permission) {
-            case Manifest.permission.CAMERA:
-                permissionName = "相机";
-                break;
-            case Manifest.permission.WRITE_EXTERNAL_STORAGE:
-            case Manifest.permission.READ_EXTERNAL_STORAGE:
-                permissionName = "存储";
-                break;
-            case Manifest.permission.RECORD_AUDIO:
-                permissionName = "录音";
-                break;
-            case Manifest.permission.CALL_PHONE:
-                permissionName = "拨打电话";
-                break;
-            case Manifest.permission.ACCESS_FINE_LOCATION:
-            case Manifest.permission.ACCESS_COARSE_LOCATION:
-                permissionName = "定位";
-                break;
-            case Manifest.permission.READ_CONTACTS:
-            case Manifest.permission.WRITE_CONTACTS:
-            case Manifest.permission.GET_ACCOUNTS:
-                permissionName = "联系人";
-                break;
-            default:
-                break;
-        }
-        return permissionName;
-    }
 
-    static void toSetting(@NonNull Context context) {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.parse("package:" + context.getPackageName()));
-        context.startActivity(intent);
-    }
 }
