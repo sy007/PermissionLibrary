@@ -1,6 +1,5 @@
 package com.sunyuan.permission;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -20,7 +19,6 @@ import java.util.Objects;
 public class PermissionsUtil {
 
 
-
     static PermissionConfig permissionConfig;
 
 
@@ -33,9 +31,7 @@ public class PermissionsUtil {
     public static PermissionFeature with(Context context) {
         Objects.requireNonNull(context, "context connot be empty");
         return new PermissionFeatureImpl(context);
-//        throw new IllegalArgumentException("not supported yet application request permissions");
     }
-
 
 
     /**
@@ -45,7 +41,7 @@ public class PermissionsUtil {
      * @param permissions
      * @return
      */
-    static boolean hasPermission(@NonNull Context context, @NonNull String... permissions) {
+    public static boolean hasPermission(@NonNull Context context, @NonNull String... permissions) {
         if (permissions.length == 0) {
             return false;
         }
@@ -65,7 +61,7 @@ public class PermissionsUtil {
      * @return
      */
     @NonNull
-    static List<String> getUnGrantedPermissions(Context context, String... permissions) {
+    public static List<String> getUnGrantedPermissions(Context context, String... permissions) {
         if (permissions.length == 0) {
             return new ArrayList<>();
         }
