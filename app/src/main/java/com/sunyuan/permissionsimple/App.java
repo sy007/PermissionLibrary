@@ -1,24 +1,16 @@
 package com.sunyuan.permissionsimple;
 
-import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.sunyuan.permission.DialogCallBack;
 import com.sunyuan.permission.PermissionConfig;
 import com.sunyuan.permission.PermissionsUtil;
 import com.sunyuan.permission.PremissionHandle;
-import com.sunyuan.permission.RequestPermissionListener;
 import com.sunyuan.permission.TipInfo;
 
 import java.util.HashSet;
@@ -107,7 +99,6 @@ public class App extends Application {
                                 dialog.dismiss();
                                 //告诉框架处理
                                 handle.proceed();
-                                Utils.toSetting(context);
                             }
                         });
                 builder.setCancelable(false);
@@ -115,7 +106,6 @@ public class App extends Application {
             }
         };
     }
-
 
 
 }

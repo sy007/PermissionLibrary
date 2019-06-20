@@ -3,8 +3,10 @@ package com.sunyuan.permission;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.content.PermissionChecker;
+
+import com.sunyuan.permission.operator.Operator;
+import com.sunyuan.permission.operator.OperatorImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +18,10 @@ import java.util.Objects;
  * @author six
  */
 
-public class PermissionsUtil {
+public final class PermissionsUtil {
 
 
-    static PermissionConfig permissionConfig;
+    public static PermissionConfig permissionConfig;
 
 
     public static void init(PermissionConfig permissionConfig) {
@@ -27,10 +29,10 @@ public class PermissionsUtil {
     }
 
 
-    @Nullable
-    public static PermissionFeature with(Context context) {
+
+    public static Operator with(Context context) {
         Objects.requireNonNull(context, "context connot be empty");
-        return new PermissionFeatureImpl(context);
+        return new OperatorImpl(context);
     }
 
 

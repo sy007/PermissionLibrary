@@ -45,15 +45,13 @@ public class Utils {
             case Manifest.permission.GET_ACCOUNTS:
                 permissionName = "联系人";
                 break;
+            case Manifest.permission.REQUEST_INSTALL_PACKAGES:
+                permissionName = "安装";
+                break;
             default:
                 break;
         }
         return permissionName;
     }
 
-    public static void toSetting(@NonNull Context context) {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.parse("package:" + context.getPackageName()));
-        context.startActivity(intent);
-    }
 }

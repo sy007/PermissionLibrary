@@ -1,14 +1,19 @@
 package com.sunyuan.permission;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,13 +28,17 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
     private static final String REQUEST_CODE = "REQUEST_CODE";
     private static final String PERMISSIONS = "PERMISSIONS";
     private static final String IS_SHOW_TIP = "IS_SHOW_TIP";
+    private static final int INSTALL_REQUEST = 100;
+    private static final int RUN_TIME_REQUEST = 200;
+    private static final int INSTALL_PERMISS_CODE = 300;
+    private static final String REQUEST_TYPE = "REQUEST_TYPE";
     private static RequestPermissionListener requestPermissionListener;
     private int requestCode;
     private boolean isShowTip;
     private String[] permissions;
     private TipInfo tipInfo;
     private boolean isProceed;
-
+    private int requestType;
 
     /**
      * @param context
@@ -40,16 +49,41 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
      * @param tipInfo                   修改弹窗提醒文案model{@link TipInfo}
      * @param requestPermissionListener 权限请求回调{@link RequestPermissionListener}
      */
-    public static void startActivity(Context context, int requestCode, String[] permissions,
-                                     boolean isShowTip, TipInfo tipInfo,
-                                     RequestPermissionListener requestPermissionListener) {
+    public static void startRunTimeActivity(Context context, int requestCode, String[] permissions,
+                                            boolean isShowTip, TipInfo tipInfo,
+                                            RequestPermissionListener requestPermissionListener) {
         PermissionActivity.requestPermissionListener = requestPermissionListener;
+        Intent intent = buildIntent(context, requestCode, isShowTip, tipInfo);
+        intent.putExtra(PERMISSIONS, permissions);
+        intent.putExtra(REQUEST_TYPE, RUN_TIME_REQUEST);
+        context.startActivity(intent);
+    }
+
+
+    @NonNull
+    private static Intent buildIntent(Context context, int requestCode, boolean isShowTip, TipInfo tipInfo) {
         Intent intent = new Intent(context, PermissionActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(TIP_INFO, tipInfo);
-        intent.putExtra(PERMISSIONS, permissions);
         intent.putExtra(REQUEST_CODE, requestCode);
         intent.putExtra(IS_SHOW_TIP, isShowTip);
+        return intent;
+    }
+
+
+    /**
+     * @param context
+     * @param requestCode
+     * @param isShowTip
+     * @param tipInfo
+     * @param requestPermissionListener
+     */
+    public static void startInstallActivity(Context context, int requestCode,
+                                            boolean isShowTip, TipInfo tipInfo,
+                                            RequestPermissionListener requestPermissionListener) {
+        PermissionActivity.requestPermissionListener = requestPermissionListener;
+        Intent intent = buildIntent(context, requestCode, isShowTip, tipInfo);
+        intent.putExtra(REQUEST_TYPE, INSTALL_REQUEST);
         context.startActivity(intent);
     }
 
@@ -58,9 +92,23 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
         requestCode = intent.getIntExtra(REQUEST_CODE, 200);
-        permissions = intent.getStringArrayExtra(PERMISSIONS);
         tipInfo = (TipInfo) intent.getSerializableExtra(TIP_INFO);
         isShowTip = intent.getBooleanExtra(IS_SHOW_TIP, true);
+
+
+        requestType = intent.getIntExtra(REQUEST_TYPE, RUN_TIME_REQUEST);
+        switch (requestType) {
+            case RUN_TIME_REQUEST:
+                handleRunTimePermission(intent);
+                break;
+            case INSTALL_REQUEST:
+                handleInstallPermission();
+                break;
+        }
+    }
+
+    private void handleRunTimePermission(Intent intent) {
+        permissions = intent.getStringArrayExtra(PERMISSIONS);
         List<String> unGrantedPermissions = PermissionsUtil.getUnGrantedPermissions(PermissionActivity.this,
                 permissions);
         if (!unGrantedPermissions.isEmpty()) {
@@ -77,9 +125,41 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
     }
 
 
+    private void handleInstallPermission() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            boolean installAllowed = getPackageManager().canRequestPackageInstalls();
+            if (installAllowed) {
+                permissionsGranted();
+            } else {
+                requestPermissions(Arrays.asList(Manifest.permission.REQUEST_INSTALL_PACKAGES));
+            }
+        } else {
+            permissionsGranted();
+        }
+    }
+
+
     @Override
     public void onResume() {
         super.onResume();
+        switch (requestType) {
+            case RUN_TIME_REQUEST:
+                handleRunTimePermissionHintAfter();
+                break;
+            case INSTALL_REQUEST:
+                handleInstallPermissionHintAfter();
+                break;
+        }
+    }
+
+    private void handleInstallPermissionHintAfter() {
+        if (isProceed) {
+            handleInstallPermission();
+            isProceed = false;
+        }
+    }
+
+    private void handleRunTimePermissionHintAfter() {
         if (isProceed) {
             //判断授权是否都通过了
             if (PermissionsUtil.hasPermission(PermissionActivity.this, permissions)) {
@@ -160,6 +240,34 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
     @Override
     public void proceed() {
         isProceed = true;
+        toSetting();
+    }
+
+
+    public void toSetting() {
+        switch (requestType) {
+            case RUN_TIME_REQUEST:
+                Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent.setData(Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+                break;
+            case INSTALL_REQUEST:
+                intent = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, INSTALL_PERMISS_CODE);
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestType) {
+            case INSTALL_REQUEST:
+                if (resultCode == RESULT_OK && requestCode == INSTALL_PERMISS_CODE) {
+                    permissionsGranted();
+                }
+                break;
+        }
     }
 
     @Override

@@ -12,19 +12,12 @@ import java.util.Set;
 public interface PermissionFeature {
 
     /**
-     * 需要请求的权限
-     *
-     * @param permissions
-     * @return
-     */
-    PermissionFeature needRequestPermissions(@NonNull String... permissions);
-
-    /**
      * 设置权限同意或拒绝后的回调
      *
      * @param requestPermissionListener
      * @return
      */
+    @NonNull
     PermissionFeature addRequestPermissionListener(RequestPermissionListener requestPermissionListener);
 
     /**
@@ -33,6 +26,7 @@ public interface PermissionFeature {
      * @param isShowTip 是否显示弹窗提示 默认显示
      * @return
      */
+    @NonNull
     PermissionFeature showTip(boolean isShowTip);
 
     /**
@@ -43,6 +37,7 @@ public interface PermissionFeature {
      * @param tipInfo
      * @return
      */
+    @NonNull
     PermissionFeature setTip(TipInfo tipInfo);
 
     /**

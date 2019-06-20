@@ -42,6 +42,7 @@ public class ActivityDemo extends Activity implements RequestPermissionListener,
             //打开相机拍照
             case R.id.btn_camera_request:
                 PermissionsUtil.with(this)
+                        .runTime()
                         .needRequestPermissions(
                                 Manifest.permission.READ_EXTERNAL_STORAGE,
                                 Manifest.permission.CAMERA,
@@ -52,6 +53,7 @@ public class ActivityDemo extends Activity implements RequestPermissionListener,
             //拨打电话
             case R.id.btn_callphone_request:
                 PermissionsUtil.with(this)
+                        .runTime()
                         .needRequestPermissions(Manifest.permission.CALL_PHONE)
                         .addRequestPermissionListener(this)
                         .request(200);
