@@ -43,9 +43,11 @@ public class FragmentActivityDemo extends AppCompatActivity implements View.OnCl
             //打开相机拍照
             case R.id.btn_camera_request:
                 PermissionsUtil.with(this)
-                        .runTime().
-                        needRequestPermissions(Manifest.permission.REQUEST_INSTALL_PACKAGES)
-                        .addRequestPermissionListener(this)
+                        .runTime()
+                        .needRequestPermissions(
+                                Manifest.permission.READ_EXTERNAL_STORAGE,
+                                Manifest.permission.CAMERA,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         .addRequestPermissionListener(this)
                         .request(201);
                 break;
