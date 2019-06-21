@@ -30,15 +30,15 @@ public abstract class BaseRequest implements PermissionFeature {
     }
 
     @Override
-    public PermissionFeature  showTip(boolean isShowTip) {
+    public PermissionFeature showTip(boolean isShowTip) {
         this.isShowTip = isShowTip;
-        return  this;
+        return this;
     }
 
     @Override
     public PermissionFeature setTip(TipInfo tipInfo) {
         this.tipInfo = tipInfo;
-        return  this;
+        return this;
     }
 
 }

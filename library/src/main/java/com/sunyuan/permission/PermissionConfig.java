@@ -1,10 +1,12 @@
 package com.sunyuan.permission;
 
+import java.io.Serializable;
+
 /**
  * author:Six
  * Date:2019/6/12
  */
-public class PermissionConfig {
+public class PermissionConfig implements Serializable {
     private boolean isShowTip;
     private DialogCallBack dialogCallBack;
 

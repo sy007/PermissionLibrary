@@ -1,4 +1,4 @@
-package com.sunyuan.permission.operator;
+package com.sunyuan.permission.operate;
 
 import android.content.Context;
 
@@ -11,10 +11,10 @@ import com.sunyuan.permission.request.RunTimeRequestImpl;
  * author:Six
  * Date:2019/6/20
  */
-public class OperatorImpl implements Operator {
+public class OperateImpl implements Operate {
     private Context context;
 
-    public OperatorImpl(Context context) {
+    public OperateImpl(Context context) {
         this.context = context;
     }
 

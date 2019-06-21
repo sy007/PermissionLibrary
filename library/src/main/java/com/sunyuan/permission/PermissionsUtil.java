@@ -5,8 +5,8 @@ import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.content.PermissionChecker;
 
-import com.sunyuan.permission.operator.Operator;
-import com.sunyuan.permission.operator.OperatorImpl;
+import com.sunyuan.permission.operate.Operate;
+import com.sunyuan.permission.operate.OperateImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +29,9 @@ public final class PermissionsUtil {
     }
 
 
-
-    public static Operator with(Context context) {
+    public static Operate with(Context context) {
         Objects.requireNonNull(context, "context connot be empty");
-        return new OperatorImpl(context);
+        return new OperateImpl(context);
     }
 
 
