@@ -15,6 +15,16 @@ public class InstallRequestImpl extends BaseRequest implements InstallRequest {
 
     @Override
     public void request(int requestCode) {
-        PermissionActivity.startInstallActivity(context, requestCode, isShowTip, tipInfo, requestPermissionListener);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            boolean installAllowed = context.getPackageManager().canRequestPackageInstalls();
+            if (installAllowed) {
+                requestPermissionListener.onRequestSuccess(requestCode);
+            } else {
+                PermissionActivity.startInstallActivity(context, requestCode, isShowTip, tipInfo, requestPermissionListener);
+            }
+        } else {
+            requestPermissionListener.onRequestSuccess(requestCode);
+        }
+
     }
 }

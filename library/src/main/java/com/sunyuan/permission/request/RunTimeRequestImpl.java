@@ -3,6 +3,7 @@ package com.sunyuan.permission.request;
 import android.content.Context;
 
 import com.sunyuan.permission.PermissionActivity;
+import com.sunyuan.permission.PermissionsUtil;
 
 import java.util.Objects;
 
@@ -27,10 +28,14 @@ public class RunTimeRequestImpl extends BaseRequest implements RunTimeRequest {
     @Override
     public void request(int requestCode) {
         Objects.requireNonNull(permissions, "permissions connot be empty");
-        PermissionActivity.startRunTimeActivity(context,
-                requestCode,
-                permissions,
-                isShowTip,
-                tipInfo, requestPermissionListener);
+        if (PermissionsUtil.hasPermission(context, permissions)) {
+            requestPermissionListener.onRequestSuccess(requestCode);
+        } else {
+            PermissionActivity.startRunTimeActivity(context,
+                    requestCode,
+                    permissions,
+                    isShowTip,
+                    tipInfo, requestPermissionListener);
+        }
     }
 }
