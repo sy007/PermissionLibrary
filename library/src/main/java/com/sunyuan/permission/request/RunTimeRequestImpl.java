@@ -29,7 +29,9 @@ public class RunTimeRequestImpl extends BaseRequest implements RunTimeRequest {
     public void request(int requestCode) {
         Objects.requireNonNull(permissions, "permissions connot be empty");
         if (PermissionsUtil.hasPermission(context, permissions)) {
-            requestPermissionListener.onRequestSuccess(requestCode);
+            if (requestPermissionListener != null) {
+                requestPermissionListener.onRequestSuccess(requestCode);
+            }
         } else {
             PermissionActivity.startRunTimeActivity(context,
                     requestCode,
