@@ -13,7 +13,7 @@ allprojects {
 }
     
     
-implementation 'com.github.sy007:PermissionLibrary:1.0-beta'
+implementation 'com.github.sy007:PermissionLibrary:1.1.5-release'
 ```
 在**Application**中全局配置
 ```java
