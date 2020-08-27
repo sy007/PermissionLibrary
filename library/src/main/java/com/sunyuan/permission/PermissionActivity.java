@@ -9,9 +9,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -195,9 +196,9 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
     }
 
 
-    private void permissionsDenied() {
+    private void permissionsDenied(Set<String> permissions) {
         if (requestPermissionListener != null) {
-            requestPermissionListener.onRequestFail(requestCode);
+            requestPermissionListener.onRequestFail(requestCode, permissions);
         }
         finish();
     }
@@ -230,10 +231,10 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
                 dialog.show();
                 return;
             }
-            permissionsDenied();
+            permissionsDenied(rejectPermissions);
         } else {
             //不需要提示用户
-            permissionsDenied();
+            permissionsDenied(rejectPermissions);
         }
     }
 
@@ -272,7 +273,7 @@ public class PermissionActivity extends AppCompatActivity implements PremissionH
 
     @Override
     public void cancel() {
-        permissionsDenied();
+        permissionsDenied(new HashSet<String>());
     }
 
 

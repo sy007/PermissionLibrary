@@ -8,7 +8,9 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
+
+import androidx.core.content.FileProvider;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -18,6 +20,7 @@ import com.sunyuan.permission.PermissionsUtil;
 import com.sunyuan.permission.RequestPermissionListener;
 
 import java.io.File;
+import java.util.Set;
 
 public class ActivityDemo extends Activity implements RequestPermissionListener, View.OnClickListener {
 
@@ -130,7 +133,7 @@ public class ActivityDemo extends Activity implements RequestPermissionListener,
     }
 
     @Override
-    public void onRequestFail(int requestCode) {
+    public void onRequestFail(int requestCode, Set<String> permissions) {
         switch (requestCode) {
             case 200:
                 callPhoneError();
@@ -140,6 +143,4 @@ public class ActivityDemo extends Activity implements RequestPermissionListener,
                 break;
         }
     }
-
-
 }

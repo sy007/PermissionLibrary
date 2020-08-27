@@ -6,8 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +19,7 @@ import com.sunyuan.permission.PermissionsUtil;
 import com.sunyuan.permission.RequestPermissionListener;
 
 import java.io.File;
+import java.util.Set;
 
 public class FragmentActivityDemo extends AppCompatActivity implements View.OnClickListener, RequestPermissionListener {
 
@@ -131,7 +132,7 @@ public class FragmentActivityDemo extends AppCompatActivity implements View.OnCl
     }
 
     @Override
-    public void onRequestFail(int requestCode) {
+    public void onRequestFail(int requestCode, Set<String> permissions) {
         switch (requestCode) {
             case 200:
                 callPhoneError();

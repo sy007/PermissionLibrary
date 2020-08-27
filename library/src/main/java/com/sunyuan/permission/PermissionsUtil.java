@@ -2,8 +2,8 @@ package com.sunyuan.permission;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.v4.content.PermissionChecker;
+import androidx.annotation.NonNull;
+import androidx.core.content.PermissionChecker;
 
 import com.sunyuan.permission.operate.Operate;
 import com.sunyuan.permission.operate.OperateImpl;
